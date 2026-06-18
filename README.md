@@ -83,3 +83,24 @@
 
 ## Streamlit Dashboard
 - [마켓컬리 리뷰 분석 대시보드](https://kurly-review-llm-analysis-fgcvsoscz7tvl7wu8keu6b.streamlit.app/)
+
+## SQL 재설계 (보완 프로젝트)
+- 기존 Python 기반 VOC 리뷰 분석 프로젝트를 대시보드 연동 및 고객 불만 추적 관점의 SQL 데이터 마트 구조로 재구성하며 데이터 모델링 역량을 고도화함.
+
+
+### 파이프라인 (Pipeline)
+01_voc_preprocessing.sql (원천 리뷰 데이터 정제 및 카테고리 매핑)
+→ 02_sentiment_complaint_analysis.sql (감성 분석 및 불만 유형(배송/품질 등) 다중 분류 집계)
+→ 03_priority_dashboard_mart.sql (Priority Index 기반 운영 우선순위 대시보드 마트 생성)
+
+### 구현 내용
+- 비정형 텍스트 기반 다중 레이블 분류 SQL 이식 (LIKE & UNION ALL 활용)
+- 감성 및 불만 유형(배송/품질 등) 다차원 집계 로직 구현
+- 스칼라 전역 변수(전체 리뷰 수, 최대 점수)를 CROSS JOIN으로 연동한 점수 정규화 로직 적용
+- 비즈니스 로직(Priority Index) 기반의 운영 우선순위(Tier) 자동 산출 마트 구축
+
+### 학습 내용
+- Python 기반 룰(Rule) 기반 텍스트 분석 로직의 SQL 데이터 마트 전환
+- 1:N 중복 분류를 허용하는 언피벗(Unpivot) 형태의 데이터 재구조화
+- CROSS JOIN을 활용한 분모(전체 모수) 유지 및 정규화 스케일링 방법 체득
+- BI 툴 대시보드 연동을 고려한 요약 뷰(Summary View) 설계 및 데이터 정합성 검증
