@@ -1,4 +1,3 @@
-
 -- 목적: 마켓컬리 리뷰 원천 데이터(kurly_reviews_raw)를 전처리, 상품번호 매핑을 통해 카테고리 및 세부 품목 유형 분류 요약 테이블 생성
 -- 참고: 01_kurly_review_analysis_output.ipynb의 "2. 상품 매핑" 및 "파생 컬럼" 전처리
 
