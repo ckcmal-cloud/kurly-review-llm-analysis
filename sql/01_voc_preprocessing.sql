@@ -1,9 +1,6 @@
--- =========================================================================
--- 01_voc_preprocessing.sql
--- 목적: 마켓컬리 리뷰 원천 데이터(kurly_reviews_raw)를 전처리하고,
---       상품번호 매핑을 통해 카테고리 및 세부 품목 유형을 분류하여 요약 테이블을 생성합니다.
--- 유래: 01_kurly_review_analysis_output.ipynb의 "2. 상품 매핑" 및 "파생 컬럼" 전처리
--- =========================================================================
+
+-- 목적: 마켓컬리 리뷰 원천 데이터(kurly_reviews_raw)를 전처리, 상품번호 매핑을 통해 카테고리 및 세부 품목 유형 분류 요약 테이블 생성
+-- 참고: 01_kurly_review_analysis_output.ipynb의 "2. 상품 매핑" 및 "파생 컬럼" 전처리
 
 -- 1. 원천 리뷰 데이터 정제 및 카테고리 매핑 테이블(user_voc_base) 구축
 CREATE TABLE user_voc_base AS
@@ -12,14 +9,14 @@ SELECT
     COALESCE(segment, '신선식품') AS segment,
     review_text,
     
-    -- 리뷰 텍스트 전처리 및 글자 수 연산 (Python Line 724: review_length 계산 대응)
+    -- 리뷰 텍스트 전처리 및 글자 수 연산 
     LENGTH(TRIM(COALESCE(review_text, ''))) AS review_length,
     
-    -- registered_at 날짜 파싱 및 year_month 생성 (Python Line 725-726 대응)
+    -- registered_at 날짜 파싱 및 year_month 생성
     CAST(registered_at AS TIMESTAMP) AS registered_at,
     DATE_TRUNC('month', CAST(registered_at AS TIMESTAMP)) AS year_month,
     
-    -- 상품번호 기반 카테고리 매핑 (Python Line 444-451: category_map 대응)
+    -- 상품번호 기반 카테고리 매핑
     CASE 
         WHEN product_no IN ('5061259','1001303421','1000122762','5005943','1000908371','1001882653','5049096','1000065953','1001847779','1000343040','1000914411','5030220','5060606','1000873951','1001811209') THEN '사과'
         WHEN product_no IN ('5048935','1000350168','1000942891','5065323','1001848684','5062680','5106292','5065480','1001801374','1001801376','1001801377','1001801382','1001801369','5035027','1001801367','1001801372','1001801375','1001801379') THEN '딸기'
@@ -30,7 +27,7 @@ SELECT
         ELSE '기타'
     END AS category,
     
-    -- 세부 유형 매핑 (특히 토마토 분기, Python Line 449-451: subtype_map 대응)
+    -- 세부 유형 매핑
     CASE 
         WHEN product_no IN ('5063690','5066038','5000100','1000357035','5136653','5006032','5029436','5067909','5031060','5063866','5049245','1001188148','1001971868','5002974','5132941','1001341778') THEN '일반'
         WHEN product_no IN ('5063578','5029438','1000147414','1000376854','5049265','1000956901','5157163','1001392267','1000127040','5000099','1000220028','1000973395','5063864','1000479067','1001881389','1001137981','1002034192','1001971858') THEN '방울'
@@ -43,7 +40,6 @@ FROM kurly_reviews_raw; -- 마켓컬리 API 크롤링 원천 로그 테이블
 
 
 -- 2. 요약 결과 생성 (Review Summary 및 Category Summary 도출)
--- Python Line 1018-1025: summary 집계 로직 재현
 CREATE TABLE voc_category_summary AS
 SELECT 
     segment,
