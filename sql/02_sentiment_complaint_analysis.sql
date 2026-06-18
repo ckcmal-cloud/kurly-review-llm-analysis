@@ -1,12 +1,7 @@
--- =========================================================================
--- 02_sentiment_complaint_analysis.sql
--- 목적: 리뷰 데이터의 감성(긍정/부정/중립) 비율을 요약하고,
---       부정 리뷰 내에서 구체적인 고객 불만 유형(배송/신선도/품질/맛)을 집계합니다.
--- 유래: 01_kurly_review_analysis_output.ipynb의 "감성 분포" 및 "4축 분류(axis_keywords)" 로직
--- =========================================================================
+-- 목적: 리뷰 데이터의 감성(긍정/부정/중립) 비율 요약,부정 리뷰 내에서 구체적인 고객 불만 유형(배송/신선도/품질/맛) 집계
+-- 참고: 01_kurly_review_analysis_output.ipynb의 "감성 분포" 및 "4축 분류(axis_keywords)" 로직
 
 -- 1. 전체 리뷰 감성 분포 요약 (Sentiment Summary)
--- Python Line 232-237: sentiment.value_counts() 대응
 CREATE TABLE voc_sentiment_summary AS
 SELECT 
     sentiment,
@@ -17,28 +12,8 @@ GROUP BY sentiment;
 
 
 -- 2. 부정(Negative) 리뷰 대상 불만 유형 집계 (Complaint Summary)
--- =====================================================================
--- [핵심 수정] Python 원본과의 불일치 해소
---
--- 수정 전(기존 SQL):
---   CASE WHEN ... LIKE '%배송%' THEN '배송' (1순위 단일 분류, 키워드 4~5개)
---
--- 수정 후(현재 SQL):
---   Python의 axis_keywords 딕셔너리를 그대로 재현.
---   4개 축(배송/신선도/품질/맛)이 각각 독립된 플래그(0/1)로 판정되어,
---   한 리뷰가 여러 축에 동시 분류될 수 있습니다. (중복 분류 허용)
---
--- Python 원본 로직 (Notebook Line 2201~2204):
---   for axis, words in axis_keywords.items():
---       hit_count = sum(1 for word in words if word in text)
---       label[f'axis_{axis}'] = 1 if hit_count > 0 else 0
---
 -- Python axis_keywords 딕셔너리 전체 키워드를 LIKE 패턴으로 이식:
---   axis_맛      : 31개 키워드
---   axis_품질    : 30개 키워드
---   axis_신선도  : 26개 키워드
---   axis_배송    : 28개 키워드
--- =====================================================================
+-- axis_맛      : 31개 키워드 / axis_품질    : 30개 키워드 / axis_신선도  : 26개 키워드 / axis_배송    : 28개 키워드
 
 CREATE TABLE voc_complaint_summary AS
 WITH negative_reviews AS (
@@ -52,8 +27,7 @@ WITH negative_reviews AS (
     WHERE sentiment = '부정'
 ),
 
--- [수정] 4축 독립 플래그 생성 (Python axis_keywords 딕셔너리 전체 반영)
--- Python: label[f'axis_{axis}'] = 1 if hit_count > 0 else 0
+-- 4축 독립 플래그 생성 (Python axis_keywords 딕셔너리 전체 반영)
 axis_flags AS (
     SELECT 
         review_id,
@@ -132,9 +106,8 @@ axis_flags AS (
     FROM negative_reviews
 ),
 
--- [수정] UNPIVOT: 4개 축 플래그를 행으로 변환 (Python의 중복 분류 구조 재현)
--- Python에서는 axis_배송=1, axis_품질=1이 동시에 가능하고, 각각이 독립적으로 집계됨
--- SQL에서는 UNION ALL로 4개 축을 각각 행으로 분리하여 동일한 효과를 구현
+-- UNPIVOT: 4개 축 플래그를 행으로 변환 (Python의 중복 분류 구조 재현)
+-- Python : axis_배송=1, axis_품질=1이 동시에 가능하고, 각각이 독립 집계 / SQL : UNION ALL로 4개 축을 각각 행으로 분리하여 동일한 효과를 구현
 complaint_rows AS (
     SELECT review_id, category, review_length, '맛'    AS complaint_type FROM axis_flags WHERE axis_맛     = 1
     UNION ALL
