@@ -13,7 +13,7 @@ GROUP BY sentiment;
 
 -- 2. 부정(Negative) 리뷰 대상 불만 유형 집계 (Complaint Summary)
 -- Python axis_keywords 딕셔너리 전체 키워드를 LIKE 패턴으로 이식:
--- axis_맛      : 31개 키워드 / axis_품질    : 30개 키워드 / axis_신선도  : 26개 키워드 / axis_배송    : 28개 키워드
+-- axis_맛 : 31개 키워드 / axis_품질 : 30개 키워드 / axis_신선도 : 26개 키워드 / axis_배송 : 28개 키워드
 
 CREATE TABLE voc_complaint_summary AS
 WITH negative_reviews AS (
@@ -36,9 +36,6 @@ axis_flags AS (
         review_length,
 
         -- 축1: axis_맛 (Python axis_keywords['맛'], 31개 키워드)
-        -- 맛있, 맛나, 달, 달콤, 달달, 새콤, 시원, 시큼, 쓴, 짭, 짜, 고소,
-        -- 풍미, 향, 감칠맛, 식감, 쫀득, 부드럽, 질김, 질겨, 꿀맛, 싱겁, 담백,
-        -- 당도, 산미, 향긋, 기름기, 마블링, 육즙, 쫄깃, 느끼
         CASE WHEN
             review_text LIKE '%맛있%' OR review_text LIKE '%맛나%' OR review_text LIKE '%달콤%'
             OR review_text LIKE '%달달%' OR review_text LIKE '%새콤%' OR review_text LIKE '%시원%'
@@ -54,9 +51,6 @@ axis_flags AS (
         THEN 1 ELSE 0 END AS axis_맛,
 
         -- 축2: axis_품질 (Python axis_keywords['품질'], 30개 키워드)
-        -- 크기, 크다, 작다, 작은, 큰, 실하, 알차, 등급, 1+, 1++, 한우,
-        -- 국산, 원산지, 흠집, 상처, 멍, 벌레, 이물, 곰팡이, 가격, 저렴,
-        -- 비싸, 가성비, 값어치, 품질, 퀄리티, 모양, 색, 색감, 때깔
         CASE WHEN
             review_text LIKE '%크기%'  OR review_text LIKE '%크다%'  OR review_text LIKE '%작다%'
             OR review_text LIKE '%작은%'  OR review_text LIKE '%실하%'  OR review_text LIKE '%알차%'
@@ -71,9 +65,6 @@ axis_flags AS (
         THEN 1 ELSE 0 END AS axis_품질,
 
         -- 축3: axis_신선도 (Python axis_keywords['신선도'], 26개 키워드)
-        -- 신선, 싱싱, 무르, 물렁, 짓무, 상했, 상한, 변질, 쉰, 썩, 곰팡,
-        -- 시들, 유통기한, 유통, 임박, 날짜, 생기, 팔팔, 살아있, 비린, 비림,
-        -- 비린내, 상함, 신선도, 생생, 살아
         CASE WHEN
             review_text LIKE '%신선%'    OR review_text LIKE '%싱싱%'    OR review_text LIKE '%무르%'
             OR review_text LIKE '%물렁%'    OR review_text LIKE '%짓무%'    OR review_text LIKE '%상했%'
@@ -87,9 +78,6 @@ axis_flags AS (
         THEN 1 ELSE 0 END AS axis_신선도,
 
         -- 축4: axis_배송 (Python axis_keywords['배송'], 28개 키워드)
-        -- 배송, 새벽, 포장, 박스, 아이스팩, 드라이아이스, 보냉, 깨, 파손,
-        -- 부러, 흐르, 새, 샘, 터짐, 터져, 찢, 찌그, 도착, 받았, 온도,
-        -- 미지근, 따뜻, 차갑, 택배, 기사님, 스티로폼, 냉동, 냉장
         CASE WHEN
             review_text LIKE '%배송%'       OR review_text LIKE '%새벽%'       OR review_text LIKE '%포장%'
             OR review_text LIKE '%박스%'       OR review_text LIKE '%아이스팩%'   OR review_text LIKE '%드라이아이스%'
